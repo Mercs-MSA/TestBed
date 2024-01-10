@@ -1,4 +1,4 @@
-package frc.robot.subsystems.swervedrive.vision;
+package frc.robot.subsystems.vision;
 
 import java.util.List;
 

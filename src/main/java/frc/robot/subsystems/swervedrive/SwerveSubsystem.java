@@ -102,7 +102,7 @@ public class SwerveSubsystem extends SubsystemBase
                                          new ReplanningConfig()
                                          // Default path replanning config. See the API for the options here
         ),
-        this // Reference to this subsystem to set requirements
+        null, this // Reference to this subsystem to set requirements
                                   );
   }
 

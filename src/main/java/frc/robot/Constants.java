@@ -51,4 +51,12 @@ public final class Constants
     public static final double TURN_CONSTANT = 0.75;
   }
 
+  public static class IntakeConstants {
+
+    // Motor IDs
+    public static final int INTAKE_ARM_MOTOR_ID = 7;
+    public static final int INTAKE_ROLLER_MOTOR_ID = 8;
+
+  }
+
 }

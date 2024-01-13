@@ -89,17 +89,17 @@ public class CANCoderSwerve extends SwerveAbsoluteEncoder
     readingError = false;
     MagnetHealthValue strength = encoder.getMagnetHealth().getValue();
 
-    if (strength != MagnetHealthValue.Magnet_Green)
-    {
-      DriverStation.reportWarning(
-          "CANCoder " + encoder.getDeviceID() + " magnetic field is less than ideal.\n", false);
-    }
-    if (strength == MagnetHealthValue.Magnet_Invalid || strength == MagnetHealthValue.Magnet_Red)
-    {
-      readingError = true;
-      DriverStation.reportWarning("CANCoder " + encoder.getDeviceID() + " reading was faulty.\n", false);
-      return 0;
-    }
+    // if (strength != MagnetHealthValue.Magnet_Green)
+    // {
+    //   DriverStation.reportWarning(
+    //       "CANCoder " + encoder.getDeviceID() + " magnetic field is less than ideal.\n", false);
+    // }
+    // if (strength == MagnetHealthValue.Magnet_Invalid || strength == MagnetHealthValue.Magnet_Red)
+    // {
+    //   readingError = true;
+    //   DriverStation.reportWarning("CANCoder " + encoder.getDeviceID() + " reading was faulty.\n", false);
+    //   return 0;
+    // }
     StatusSignal<Double> angle = encoder.getAbsolutePosition().refresh();
 
     // Taken from democat's library.
@@ -110,13 +110,13 @@ public class CANCoderSwerve extends SwerveAbsoluteEncoder
       {
         break;
       }
-      angle = angle.waitForUpdate(0.01);
+      // angle = angle.waitForUpdate(0.01);
     }
-    if (angle.getStatus() != StatusCode.OK)
-    {
-      readingError = true;
-      DriverStation.reportWarning("CANCoder " + encoder.getDeviceID() + " reading was faulty, ignoring.\n", false);
-    }
+    // if (angle.getStatus() != StatusCode.OK)
+    // {
+    //   readingError = true;
+    //   DriverStation.reportWarning("CANCoder " + encoder.getDeviceID() + " reading was faulty, ignoring.\n", false);
+    // }
 
     return angle.getValue() * 360;
   }

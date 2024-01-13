@@ -4,13 +4,20 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import java.io.File;
 import java.io.IOException;
+
+import javax.swing.text.StyleContext.SmallAttributeSet;
+
+import swervelib.math.SwerveMath;
 import swervelib.parser.SwerveParser;
 
 /**
@@ -27,7 +34,7 @@ public class Robot extends TimedRobot
   private RobotContainer m_robotContainer;
 
   private Timer disabledTimer;
-
+  XboxController driverXbox = new XboxController(0);
   public Robot()
   {
     instance = this;
@@ -68,6 +75,8 @@ public class Robot extends TimedRobot
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
+    SmartDashboard.putNumber("angle", SwerveMath.calculateDegreesPerSteeringRotation(15.43, 1));
+    SmartDashboard.putNumber("drive", SwerveMath.calculateMetersPerRotation(0.1016, 7.63, 1));
   }
 
   /**
@@ -136,6 +145,13 @@ public class Robot extends TimedRobot
   @Override
   public void teleopPeriodic()
   {
+    SmartDashboard.putNumber("driverXbox getLeftX", driverXbox.getLeftX());
+    SmartDashboard.putNumber("driverXbox getLeftY", driverXbox.getLeftY());
+    SmartDashboard.putNumber("driverXbox getRightX", driverXbox.getRightX());
+    SmartDashboard.putNumber("driverXbox getRightY", driverXbox.getRightY());
+
+    // m_robotContainer.drivebase.drive(new Translation2d(driverXbox.getLeftX()*15, driverXbox.getLeftY()*15), driverXbox.getRightX(), false);
+    
   }
 
   @Override

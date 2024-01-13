@@ -40,7 +40,17 @@ public final class Constants
     // Hold time on motor brakes when disabled
     public static final double WHEEL_LOCK_TIME = 10; // seconds
   }
+  
+  public static final class Climber
+  {
 
+    public static final int tubeMotor_Left_ID = 1;
+    public static final int winchMotor_Left_ID = 2;
+    public static final int tubeMotor_Right_ID = 3;
+    public static final int winchMotor_Right_ID = 4;
+
+  }
+  
   public static class OperatorConstants
   {
 
@@ -58,5 +68,4 @@ public final class Constants
     public static final int INTAKE_ROLLER_MOTOR_ID = 8;
 
   }
-
 }

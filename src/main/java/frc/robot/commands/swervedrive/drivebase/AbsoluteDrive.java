@@ -57,6 +57,11 @@ public class AbsoluteDrive extends Command
     this.headingVertical = headingVertical;
 
     addRequirements(swerve);
+
+    // SmartDashboard.putNumber("vX", vX.getAsDouble());
+    // SmartDashboard.putNumber("vY", vY.getAsDouble());
+    // SmartDashboard.putNumber("headingHorizontal", headingHorizontal.getAsDouble());
+    // SmartDashboard.putNumber("headingVertical", headingVertical.getAsDouble());
   }
 
   @Override
@@ -99,7 +104,8 @@ public class AbsoluteDrive extends Command
     SmartDashboard.putString("Translation", translation.toString());
 
     // Make the robot move
-    swerve.drive(translation, desiredSpeeds.omegaRadiansPerSecond, true);
+    swerve.drive(translation, desiredSpeeds.omegaRadiansPerSecond, false);
+    
 
   }
 

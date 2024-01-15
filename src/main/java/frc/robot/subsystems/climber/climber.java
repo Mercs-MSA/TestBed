@@ -7,8 +7,8 @@ package frc.robot.subsystems.climber;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+// import com.ctre.phoenix6.motorcontrol.ControlMode;
+import edu.wpi.first.wpilibj.motorcontrol.PWMTalonFX;
 import edu.wpi.first.wpilibj.motorcontrol.PWMMotorController;
 import edu.wpi.first.wpilibj.MotorSafety;
 import java.lang.Object;
@@ -30,8 +30,8 @@ public class climber extends SubsystemBase {
       //CANSparkMax tubeMotorLeft = new CANSparkMax(Constants.Climber.tubeMotor_Left_ID, MotorType.kBrushless);
       //CANSparkMax tubeMotorRight = new CANSparkMax(Constants.Climber.tubeMotor_Right_ID, MotorType.kBrushless);
 
-      TalonSRX tubeMotorLeft = new TalonSRX(Constants.Climber.tubeMotor_Left_ID);
-      TalonSRX tubeMotorRight = new TalonSRX(Constants.Climber.tubeMotor_Right_ID);
+      PWMTalonFX tubeMotorLeft = new PWMTalonFX(Constants.Climber.tubeMotor_Left_ID);
+      PWMTalonFX tubeMotorRight = new PWMTalonFX(Constants.Climber.tubeMotor_Right_ID);
 
 
       int leftState = 0;
@@ -68,12 +68,12 @@ public class climber extends SubsystemBase {
     if (leftState == tubeMotorLeftUp)
     {
       //go down
-      tubeMotorLeft.set(ControlMode.PercentOutput, direction);
+      tubeMotorLeft.set(direction);
     }
     else if (leftState == tubeMotorLeftDown)
     {
       //go up
-      tubeMotorLeft.set(ControlMode.PercentOutput, direction);
+      tubeMotorLeft.set(direction);
     }
     else if (leftState == tubeMotorLeftTransit)
     {
@@ -82,12 +82,12 @@ public class climber extends SubsystemBase {
     if (rightState == tubeMotorRightUp)
     {
       //go down
-      tubeMotorRight.set(ControlMode.PercentOutput, direction);
+      tubeMotorRight.set(direction);
     }
     else if (rightState == tubeMotorRightDown)
     {
       //go up
-      tubeMotorRight.set(ControlMode.PercentOutput, direction);
+      tubeMotorRight.set(direction);
     }
     else if (rightState == tubeMotorRightTransit)
     {
@@ -99,8 +99,8 @@ public class climber extends SubsystemBase {
   public void stopMotor()
   {
     // Stop the motors
-      tubeMotorLeft.set(ControlMode.PercentOutput, 0.0);
-      tubeMotorRight.set(ControlMode.PercentOutput, 0.0);
+      tubeMotorLeft.set(0.0);
+      tubeMotorRight.set(0.0);
   }
 
   // This tightens and loosens the winch

@@ -6,13 +6,7 @@ package frc.robot.subsystems.climber;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-
-// import com.ctre.phoenix6.motorcontrol.ControlMode;
-import edu.wpi.first.wpilibj.motorcontrol.PWMTalonFX;
-import edu.wpi.first.wpilibj.motorcontrol.PWMMotorController;
-import edu.wpi.first.wpilibj.MotorSafety;
-import java.lang.Object;
-import edu.wpi.first.wpilibj.motorcontrol.MotorController;
+import com.ctre.phoenix6.hardware.TalonFX;
 
 public class climber extends SubsystemBase {
   /** Creates a new climber. */
@@ -30,8 +24,8 @@ public class climber extends SubsystemBase {
       //CANSparkMax tubeMotorLeft = new CANSparkMax(Constants.Climber.tubeMotor_Left_ID, MotorType.kBrushless);
       //CANSparkMax tubeMotorRight = new CANSparkMax(Constants.Climber.tubeMotor_Right_ID, MotorType.kBrushless);
 
-      PWMTalonFX tubeMotorLeft = new PWMTalonFX(Constants.Climber.tubeMotor_Left_ID);
-      PWMTalonFX tubeMotorRight = new PWMTalonFX(Constants.Climber.tubeMotor_Right_ID);
+      TalonFX tubeMotorLeft = new TalonFX(Constants.Climber.tubeMotor_Left_ID);
+      TalonFX tubeMotorRight = new TalonFX(Constants.Climber.tubeMotor_Right_ID);
 
 
       int leftState = 0;

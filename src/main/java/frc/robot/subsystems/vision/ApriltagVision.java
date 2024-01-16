@@ -35,7 +35,6 @@ public class ApriltagVision {
         camera = new PhotonCamera(cameraName);
         aprilTagResult = new PhotonPipelineResult();
         aprilTagHasTargets = false;
-        aprilTagBestTarget = new PhotonTrackedTarget();
         aprilTagFieldLayout = new AprilTagFieldLayout(Filesystem.getDeployDirectory().getName() + "/2024-crescendo.json");
         this.robotToCam = robotToCam; 
         poseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, camera, robotToCam);

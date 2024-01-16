@@ -14,7 +14,7 @@ public class GamePieceVision {
     private PhotonPipelineResult gamePieceResult = new PhotonPipelineResult();
     private boolean gamePieceHasTargets = false;
     private List<PhotonTrackedTarget> gamePieceTargets;
-    private PhotonTrackedTarget gamePieceBestTarget = new PhotonTrackedTarget();
+    private PhotonTrackedTarget gamePieceBestTarget;
     double gamePieceYaw, gamePiecePitch, gamePieceSkew, gamePieceAreaPercent = 999.0;
 
     public GamePieceVision(String cameraName){

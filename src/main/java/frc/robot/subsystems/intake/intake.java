@@ -10,9 +10,10 @@ import com.revrobotics.CANSparkMax;
 import edu.wpi.first.wpilibj.XboxController;
 // import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.CANSparkLowLevel.MotorType;
+import edu.wpi.first.wpilibj.DigitalInput;
 
 /* Work In Progress
- * Install library for REV 2m distance sensor
+ * DONE Install library for IR brake sensor
  * Use sensors to connect intake and SAT
  * Find out what motors we're using and how to program them
  * Refactor when rollers begin spinning
@@ -45,12 +46,12 @@ public class intake extends SubsystemBase {
 
   CANSparkMax intakeArmMotor = new CANSparkMax(IntakeConstants.INTAKE_ARM_MOTOR_ID, MotorType.kBrushless);
   CANSparkMax intakeRollerMotor = new CANSparkMax(IntakeConstants.INTAKE_ROLLER_MOTOR_ID, MotorType.kBrushless);
-// add definition for the sensor here
+  DigitalInput intakeSensor = new DigitalInput(0);
   XboxController controller = new XboxController(0);
 
   int intakeArmState;
   int intakeRollerState;
-  // add boolean for sensor state
+  boolean intakeSensorState;
   final int stateArmUp = 1;
   final int stateArmDown = 2;
   final int stateArmMoving = 3;
@@ -68,6 +69,8 @@ public class intake extends SubsystemBase {
     // declare that the starting state of intake is armUp and Roller is not moving
     intakeArmState = stateArmUp;
     intakeRollerState = stateRollerNotMoving;
+    intakeRollerMotor.restoreFactoryDefaults();
+    intakeArmMotor.restoreFactoryDefaults();
   }
 
   @Override
@@ -80,8 +83,14 @@ public class intake extends SubsystemBase {
       intakeArmState = stateArmUp;
     }
 
-    // constantly check sensor for distance
-    // when the distance changes it means to note is present and it changes states
+    // constantly check sensor for note
+    if (intakeSensor.get()) {
+      // when the note is present it changes states
+      intakeSensorState = true;
+    }
+    else {
+      intakeSensorState = false;
+    }
 
     // if button A is held,
     if (controller.getAButton()) {

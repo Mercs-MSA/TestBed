@@ -14,6 +14,8 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.autos.*;
 import frc.robot.commands.*;
 import frc.robot.subsystems.*;
+import frc.robot.subsystems.intake.*;
+
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -36,7 +38,7 @@ public class RobotContainer {
 
     /* Subsystems */
     private final Swerve s_Swerve = new Swerve();
-
+    private final intake m_Intake = new intake();
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {

@@ -8,6 +8,7 @@ import frc.robot.Constants.IntakeConstants;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.revrobotics.CANSparkMax;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 // import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -121,6 +122,8 @@ public class intake extends SubsystemBase {
     // TODO: get 2 sensors to set boundries for the arm to reach
     
     // TODO: When arm starts moving, run noteIn
+
+    SmartDashboard.putBoolean("Detecting Note", intakeSensorState);
   }
 
   // Release intake system opening

@@ -148,8 +148,10 @@ public final class Constants {
     public static class IntakeConstants {
 
         // Motor IDs
-        public static final int INTAKE_ARM_MOTOR_ID = 7;
-        public static final int INTAKE_ROLLER_MOTOR_ID = 8;
+        public static final int INTAKE_ARM_MOTOR_ID = 4;
+        public static final int INTAKE_ROLLER_MOTOR_ID = 5;
+        // Gear Ratio
+        public static final double INTAKE_GEAR_RATIO = 0.5;
     
     }
 

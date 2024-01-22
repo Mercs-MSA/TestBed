@@ -6,19 +6,25 @@ package frc.robot.subsystems.intake;
 
 import frc.robot.Constants.IntakeConstants;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
+import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkMax;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 // import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-import com.revrobotics.CANSparkLowLevel.MotorType;
+// import com.revrobotics.CANSparkLowLevel.MotorType;
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DutyCycle;
+import com.revrobotics.SparkFlexExternalEncoder;
+import com.revrobotics.CANSparkLowLevel.MotorType;
 
 /* Work In Progress
  * DONE Install library for IR brake sensor
- * Use sensors to connect intake and SAT
+ * ON HOLD Use sensors to connect intake and SAT
  * Find out what motors we're using and how to program them
- * Refactor when rollers begin spinning
- * use/connect robotState to our code
+ * ON HOLD Refactor when rollers begin spinning
+ * ON HOLD use/connect robotState to our code
  */
 
 /* Q&A:
@@ -45,8 +51,14 @@ import edu.wpi.first.wpilibj.DigitalInput;
 
 public class intake extends SubsystemBase {
 
-  CANSparkMax intakeArmMotor = new CANSparkMax(IntakeConstants.INTAKE_ARM_MOTOR_ID, MotorType.kBrushless);
-  CANSparkMax intakeRollerMotor = new CANSparkMax(IntakeConstants.INTAKE_ROLLER_MOTOR_ID, MotorType.kBrushless);
+  //CANSparkMax intakeArmMotor = new CANSparkMax(IntakeConstants.INTAKE_ARM_MOTOR_ID, MotorType.kBrushless);
+  //CANSparkMax intakeRollerMotor = new CANSparkMax(IntakeConstants.INTAKE_ROLLER_MOTOR_ID, MotorType.kBrushless);
+  DutyCycleEncoder intakeRollerMotor = new DutyCycleEncoder(IntakeConstants.INTAKE_ROLLER_MOTOR_ID);
+  
+  CANSparkFlex intakeArmMotor = new CANSparkFlex(IntakeConstants.INTAKE_ARM_MOTOR_ID, MotorType.kBrushless);
+  DutyCycleEncoder intakeArmThroughBoreEncoder = new DutyCycleEncoder(IntakeConstants.INTAKE_ARM_MOTOR_ID);
+  
+  
   DigitalInput intakeSensor = new DigitalInput(0);
   XboxController controller = new XboxController(0);
 
@@ -70,8 +82,6 @@ public class intake extends SubsystemBase {
     // declare that the starting state of intake is armUp and Roller is not moving
     intakeArmState = stateArmUp;
     intakeRollerState = stateRollerNotMoving;
-    intakeRollerMotor.restoreFactoryDefaults();
-    intakeArmMotor.restoreFactoryDefaults();
   }
 
   @Override
@@ -86,11 +96,12 @@ public class intake extends SubsystemBase {
 
     // constantly check sensor for note
     if (intakeSensor.get()) {
-      // when the note is present it changes states
-      intakeSensorState = true;
+      // this is the state where it doesn't detect the orage (for some reason)
+      intakeSensorState = false;
     }
     else {
-      intakeSensorState = false;
+      // when the note is present it changes states
+      intakeSensorState = true;
     }
 
     // if button A is held,
@@ -98,6 +109,11 @@ public class intake extends SubsystemBase {
       // start intakeDown
       intakeDown();
 
+
+
+
+
+      intakeArmMotor.getEncoder()
     }
 
     // if button A is released,
@@ -192,6 +208,24 @@ public class intake extends SubsystemBase {
 
 
 
+// Get motor position
+public double getMotorPosition() {
+  return intakeArmMotor.getEncoder().getPosition();
+}
+// Get through bore encoder position
+public double getBoreEncoderPosition() {
+  return intakeArmThroughBoreEncoder.getAbsolutePosition();
+}
+// Get Motor Position When Given Through Bore Position
+public double convertBoreToMotorPosition(double throughBorePosition) {
+  return throughBorePosition * IntakeConstants.INTAKE_GEAR_RATIO;
+}
+
+// Get Through Bore Position Given Motor Position
+public double convertMotorToBorePosition(double motorPosition) {
+  return motorPosition / IntakeConstants.INTAKE_GEAR_RATIO;
+}
+ 
 
   // THIS IS A PSEUDOCODE FUNCTION AND IS NOT REAL, EVENTUALLY THIS WILL BE IN SWERVEMODULE.JAVA
   public void setAngle(int angle)

@@ -7,17 +7,18 @@ package frc.robot.subsystems.intake;
 import frc.robot.Constants.IntakeConstants;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-import com.revrobotics.CANSparkFlex;
-import com.revrobotics.CANSparkMax;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-// import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-// import com.revrobotics.CANSparkLowLevel.MotorType;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.DutyCycle;
-import com.revrobotics.SparkFlexExternalEncoder;
-import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.ctre.phoenix6.StatusCode;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.NeutralOut;
+import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.hardware.TalonFX;
+
+//  USE NEXT LINE FOR TESTING
+//  import frc.robot.sim.PhysicsSim;
 
 /* Work In Progress
  * DONE Install library for IR brake sensor
@@ -51,16 +52,18 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 
 public class intake extends SubsystemBase {
 
-  //CANSparkMax intakeArmMotor = new CANSparkMax(IntakeConstants.INTAKE_ARM_MOTOR_ID, MotorType.kBrushless);
-  //CANSparkMax intakeRollerMotor = new CANSparkMax(IntakeConstants.INTAKE_ROLLER_MOTOR_ID, MotorType.kBrushless);
   DutyCycleEncoder intakeRollerMotor = new DutyCycleEncoder(IntakeConstants.INTAKE_ROLLER_MOTOR_ID);
-  
-  CANSparkFlex intakeArmMotor = new CANSparkFlex(IntakeConstants.INTAKE_ARM_MOTOR_ID, MotorType.kBrushless);
-  DutyCycleEncoder intakeArmThroughBoreEncoder = new DutyCycleEncoder(IntakeConstants.INTAKE_ARM_MOTOR_ID);
-  
-  
+
   DigitalInput intakeSensor = new DigitalInput(0);
-  XboxController controller = new XboxController(0);
+  XboxController controller = new XboxController(5);
+  private final TalonFX m_fx = new TalonFX(1, "rio");
+  
+  /* Be able to switch which control request to use based on a button press */
+  /* Start at position 0, enable FOC, no feed forward, use slot 0 */
+  private final PositionVoltage m_voltagePosition = new PositionVoltage(0, 0, true, 0, 0, false, false, false);
+  
+  /* Keep a brake request so we can disable the motor */
+  private final NeutralOut m_brake = new NeutralOut();
 
   int intakeArmState;
   int intakeRollerState;
@@ -72,26 +75,57 @@ public class intake extends SubsystemBase {
   final int stateRollerMoving = 5;
   final double speedRollerInward = 1.0;
   final double speedRollerOutward = -1.0;
-  final double speedArmUp = 1.0;
-  final double speedArmDown = -1.0;
+  final double positionArmDown = 0.001;
+  final double positionArmUp = 2.1;
 
   /** Creates a new intake. */
   public intake() {
     // This method will be called once (at the beginning)
-  
+
     // declare that the starting state of intake is armUp and Roller is not moving
     intakeArmState = stateArmUp;
     intakeRollerState = stateRollerNotMoving;
+
+    TalonFXConfiguration configs = new TalonFXConfiguration();
+    configs.Slot0.kP = 2.4; // An error of 0.5 rotations results in 1.2 volts output
+    configs.Slot0.kD = 0.1; // A change of 1 rotation per second results in 0.1 volts output
+    // Peak output of 8 volts
+    configs.Voltage.PeakForwardVoltage = 8;
+    configs.Voltage.PeakReverseVoltage = -8;
+
+    /* Retry config apply up to 5 times, report if failure */
+    StatusCode status = StatusCode.StatusCodeNotInitialized;
+    for (int i = 0; i < 5; ++i) {
+      status = m_fx.getConfigurator().apply(configs);
+      if (status.isOK()) break;
+    }
+    if(!status.isOK()) {
+      System.out.println("Could not apply configs, error code: " + status.toString());
+    }
+
+    /* Make sure we start at 0 */
+    m_fx.setPosition(positionArmUp);
+    // USE NEXT LINE FOR TESTING
+    // PhysicsSim.getInstance().addTalonFX(m_fx, 0.001);
   }
+  // USE FOR TESTING ALSO
+  // @Override
+  // public void simulationPeriodic() {
+  //   PhysicsSim.getInstance().run();
+  // }
 
   @Override
   public void periodic() {
+    m_fx.getPosition().refresh();
+
     // This method will be called once per scheduler run
-    if (getAngle() == 45) {
-      intakeArmState = stateArmDown;        
-    }
-    else if (getAngle() == 0) {
+    if (m_fx.getPosition().getValue() >= positionArmUp) {
       intakeArmState = stateArmUp;
+      m_fx.setControl(m_brake);        
+    }
+    else if (m_fx.getPosition().getValue() <= positionArmDown) {
+      intakeArmState = stateArmDown;
+      m_fx.setControl(m_brake);
     }
 
     // constantly check sensor for note
@@ -108,19 +142,12 @@ public class intake extends SubsystemBase {
     if (controller.getAButton()) {
       // start intakeDown
       intakeDown();
-
-
-
-
-
-      intakeArmMotor.getEncoder()
     }
 
     // if button A is released,
     else {
       // start intakeUp
       intakeUp();
-
     }
 
     // if button B is pressed and the rollers are not moving,
@@ -133,13 +160,13 @@ public class intake extends SubsystemBase {
     else if (controller.getBButton() == false && intakeRollerState == stateRollerMoving) {
       // stop rolling
       stopRoller();
-    }
-
-    // TODO: get 2 sensors to set boundries for the arm to reach
-    
+    }    
     // TODO: When arm starts moving, run noteIn
 
+    SmartDashboard.putBoolean("IsButtonPressed", controller.getAButton());
+    SmartDashboard.putNumber("StateDetection", intakeArmState);
     SmartDashboard.putBoolean("Detecting Note", intakeSensorState);
+    SmartDashboard.putNumber("MotorPosition", m_fx.getPosition().getValue());
   }
 
   // Release intake system opening
@@ -147,19 +174,9 @@ public class intake extends SubsystemBase {
     // if the arm is up,
     if (intakeArmState == stateArmUp) {
       // you should move the arm down
-      setAngle(45);
+      m_fx.setControl(m_voltagePosition.withPosition(positionArmDown));
       intakeArmState = stateArmMoving;
     }
-    // If the arm is down,
-    //else if (intakeArmState == stateArmDown) {
-      // you shouldn't move it down
-      
-    //}
-    // If the arm is moving,
-    //else {
-      // you should keep moving
-      
-    //}
   }
   
   // Picking the intake system opening back up
@@ -167,73 +184,26 @@ public class intake extends SubsystemBase {
     // If the arm is down,
     if (intakeArmState == stateArmDown) {
       // you should move it up
-      setAngle(0);
+      m_fx.setControl(m_voltagePosition.withPosition(positionArmUp));
       intakeArmState = stateArmMoving;
-
-
-      // Stop roller motor
     }
-    // if the arm is up,
-    //else if (intakeArmState == stateArmUp) {
-      // you shouldn't move the arm up
-      
-    //}
-    // If the arm is moving,
-   // else {
-      // you should keep moving
-      
-    //}
   }
 
   // Activate the intake wheels
   public void noteIn() {
     intakeRollerState = stateRollerMoving;
-    intakeRollerMotor.set(speedRollerInward);
+    // intakeRollerMotor.set(speedRollerInward);
   }
 
   // Optional mode that can release a note
   public void noteOut() {
     intakeRollerState = stateRollerMoving;
-    intakeRollerMotor.set(speedRollerOutward);
+    // intakeRollerMotor.set(speedRollerOutward);
   }
 
   public void stopRoller() {
     //set rollor speed to 0
     intakeRollerState = stateRollerNotMoving;
-    intakeRollerMotor.set(0);
-  }
-
-
-
-
-
-
-// Get motor position
-public double getMotorPosition() {
-  return intakeArmMotor.getEncoder().getPosition();
-}
-// Get through bore encoder position
-public double getBoreEncoderPosition() {
-  return intakeArmThroughBoreEncoder.getAbsolutePosition();
-}
-// Get Motor Position When Given Through Bore Position
-public double convertBoreToMotorPosition(double throughBorePosition) {
-  return throughBorePosition * IntakeConstants.INTAKE_GEAR_RATIO;
-}
-
-// Get Through Bore Position Given Motor Position
-public double convertMotorToBorePosition(double motorPosition) {
-  return motorPosition / IntakeConstants.INTAKE_GEAR_RATIO;
-}
- 
-
-  // THIS IS A PSEUDOCODE FUNCTION AND IS NOT REAL, EVENTUALLY THIS WILL BE IN SWERVEMODULE.JAVA
-  public void setAngle(int angle)
-  {
-    // PSEUDOCODE, DOES NOTHING
-  }
-
-  public int getAngle() {
-    return 1;
+    // intakeRollerMotor.set(0);
   }
 }

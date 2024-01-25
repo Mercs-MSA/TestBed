@@ -51,20 +51,6 @@ import com.ctre.phoenix6.hardware.TalonFX;
  */
 
 public class intake extends SubsystemBase {
-
-  DutyCycleEncoder intakeRollerMotor = new DutyCycleEncoder(IntakeConstants.INTAKE_ROLLER_MOTOR_ID);
-
-  DigitalInput intakeSensor = new DigitalInput(0);
-  XboxController controller = new XboxController(5);
-  private final TalonFX m_fx = new TalonFX(1, "rio");
-  
-  /* Be able to switch which control request to use based on a button press */
-  /* Start at position 0, enable FOC, no feed forward, use slot 0 */
-  private final PositionVoltage m_voltagePosition = new PositionVoltage(0, 0, true, 0, 0, false, false, false);
-  
-  /* Keep a brake request so we can disable the motor */
-  private final NeutralOut m_brake = new NeutralOut();
-
   int intakeArmState;
   int intakeRollerState;
   boolean intakeSensorState;
@@ -77,6 +63,13 @@ public class intake extends SubsystemBase {
   final double speedRollerOutward = -1.0;
   final double positionArmDown = 0.001;
   final double positionArmUp = 2.1;
+
+  DutyCycleEncoder intakeRollerMotor = new DutyCycleEncoder(IntakeConstants.INTAKE_ROLLER_MOTOR_ID);
+  DigitalInput intakeSensor = new DigitalInput(0);
+  XboxController controller = new XboxController(5);
+  private final TalonFX m_fx = new TalonFX(1, "rio");
+  private final PositionVoltage m_voltagePosition = new PositionVoltage(positionArmUp, 0, true, 0, 0, false, false, false);
+  private final NeutralOut m_brake = new NeutralOut();
 
   /** Creates a new intake. */
   public intake() {
@@ -103,11 +96,10 @@ public class intake extends SubsystemBase {
       System.out.println("Could not apply configs, error code: " + status.toString());
     }
 
-    /* Make sure we start at 0 */
-    m_fx.setPosition(positionArmUp);
     // USE NEXT LINE FOR TESTING
     // PhysicsSim.getInstance().addTalonFX(m_fx, 0.001);
   }
+
   // USE FOR TESTING ALSO
   // @Override
   // public void simulationPeriodic() {

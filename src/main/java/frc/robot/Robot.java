@@ -4,14 +4,26 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.hardware.Pigeon2;
+
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.networktables.DoubleArrayPublisher;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.LimelightHelpers.LimelightResults;
 
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
   private RobotContainer m_robotContainer;
+
+  private Pigeon2 pigeon2 = new Pigeon2(16);
+
 
   @Override
   public void robotInit() {
@@ -21,6 +33,15 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run(); 
+    LimelightHelpers.SetRobotOrientation("limelight", pigeon2.getAngle(), 0, 0, 0, 0, 0);
+
+    var lastResult = LimelightHelpers.getLatestResults("limelight");
+    if (lastResult.botpose_tagcount > 0) {
+    m_robotContainer.drivetrain.addVisionMeasurement(LimelightHelpers.getBotPose2d_wpiBlue("limelight"), Timer.getFPGATimestamp());
+      SmartDashboard.putString("lltags", lastResult.error);
+    } else {
+      SmartDashboard.putString("lltags", lastResult.error);
+    }
   }
 
   @Override

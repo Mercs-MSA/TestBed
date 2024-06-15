@@ -11,6 +11,7 @@ import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -33,17 +34,25 @@ public class RobotContainer {
   private final Telemetry logger = new Telemetry(MaxSpeed);
 
   double limelight_aim_proportional() {
-      double kP = 0.035;
-      int[] ids = new int[1];
-      ids[0] = 7;
-      LimelightHelpers.SetFiducialIDFiltersOverride("limelight", ids);
 
-      double targetingAngularVelocity = LimelightHelpers.getTX("limelight") * kP;
-      targetingAngularVelocity *= MaxAngularRate;
-      targetingAngularVelocity *= -1.0;
-      return targetingAngularVelocity;
+    LimelightHelpers.LimelightResults llresults = LimelightHelpers.getLatestResults("limelight");
+    LimelightHelpers.LimelightTarget_Fiducial[] fiducials = llresults.targets_Fiducials;
+
+    double targetingAngularVelocity = 0;
+
+    for (int i = 0; i < fiducials.length; i++) {
+      if (fiducials[i].fiducialID == 7) {
+        double kP = 0.035;
+        targetingAngularVelocity = fiducials[i].tx * kP;
+        targetingAngularVelocity *= MaxAngularRate;
+        targetingAngularVelocity *= -1.0;
+        break;
+      }
+    }
+    
+    return targetingAngularVelocity;
   }
-
+  
   private void configureBindings() {
     drivetrain.setDefaultCommand( // Drivetrain will execute this command periodically
         drivetrain.applyRequest(() -> drive.withVelocityX(joystick.getLeftY() * MaxSpeed) // Drive forward with

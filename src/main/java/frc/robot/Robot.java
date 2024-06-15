@@ -45,18 +45,30 @@ public class Robot extends TimedRobot {
     if(Math.abs(pigeon2.getRate()) > 720) {
       doRejectUpdate = true;
     }
-
+    
     if(mt2.tagCount == 0) {
       doRejectUpdate = true;
     }
-
+    
     if(!doRejectUpdate) {
       m_robotContainer.drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(.7,.7,9999999));
       m_robotContainer.drivetrain.addVisionMeasurement(
         mt2.pose,
         mt2.timestampSeconds
-      );
+        );
+      }
+      
+      LimelightHelpers.LimelightResults llresults = LimelightHelpers.getLatestResults("limelight");
+      LimelightHelpers.LimelightTarget_Fiducial[] fiducials = llresults.targets_Fiducials;
+      boolean canSeeTag7 = false;
+      for (int i = 0; i < fiducials.length; i++) {
+      if (fiducials[i].fiducialID == 7) {
+        canSeeTag7 = true;
+        break;
+      }
     }
+    SmartDashboard.putBoolean("tag 7", canSeeTag7);
+      
   }
 
   @Override

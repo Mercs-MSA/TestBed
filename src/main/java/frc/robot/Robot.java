@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.math.VecBuilder;
 
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
@@ -36,6 +37,25 @@ public class Robot extends TimedRobot {
       SmartDashboard.putBoolean("limelightResultValid", true);
     } else {
       SmartDashboard.putBoolean("limelightResultValid", false);
+    }
+
+    boolean doRejectUpdate = false;
+
+    LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
+    if(Math.abs(pigeon2.getRate()) > 720) {
+      doRejectUpdate = true;
+    }
+
+    if(mt2.tagCount == 0) {
+      doRejectUpdate = true;
+    }
+
+    if(!doRejectUpdate) {
+      m_robotContainer.drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(.7,.7,9999999));
+      m_robotContainer.drivetrain.addVisionMeasurement(
+        mt2.pose,
+        mt2.timestampSeconds
+      );
     }
   }
 

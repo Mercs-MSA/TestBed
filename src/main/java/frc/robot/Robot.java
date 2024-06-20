@@ -69,6 +69,11 @@ public class Robot extends TimedRobot {
     }
     SmartDashboard.putBoolean("tag 7", canSeeTag7);
       
+    SmartDashboard.putString("odometry", m_robotContainer.drivetrain.getOdometry().toString());
+    SmartDashboard.putNumber("poseX", m_robotContainer.drivetrain.getState().Pose.getX());
+    SmartDashboard.putNumber("poseY", m_robotContainer.drivetrain.getState().Pose.getY());
+
+
   }
 
   @Override

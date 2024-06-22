@@ -162,8 +162,7 @@ public class CommandSwerveDrivetrain extends SwerveDrivetrain implements Subsyst
         m_simNotifier.startPeriodic(kSimLoopPeriod);
     }
 
-    public SwerveDrivePoseEstimator getOdometry()
-    {
+    public SwerveDrivePoseEstimator getOdometry() {
         return this.m_odometry;
     }
 

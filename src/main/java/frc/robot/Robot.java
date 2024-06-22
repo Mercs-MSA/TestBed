@@ -24,56 +24,57 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     m_robotContainer = new RobotContainer();
+    m_robotContainer.drivetrain.getDaqThread().setThreadPriority(99);
   }
 
   @Override
   public void robotPeriodic() {
-    CommandScheduler.getInstance().run(); 
+    CommandScheduler.getInstance().run();
+
     LimelightHelpers.SetRobotOrientation("limelight", pigeon2.getAngle(), 0, 0, 0, 0, 0);
 
-    var lastResult = LimelightHelpers.getLatestResults("limelight");
-    if (lastResult.valid) {
-    m_robotContainer.drivetrain.addVisionMeasurement(LimelightHelpers.getBotPose2d_wpiBlue("limelight"), Timer.getFPGATimestamp());
-      SmartDashboard.putBoolean("limelightResultValid", true);
-    } else {
-      SmartDashboard.putBoolean("limelightResultValid", false);
-    }
+    // var lastResult = LimelightHelpers.getLatestResults("limelight");
+    // if (lastResult.valid) {
+    //   m_robotContainer.drivetrain.addVisionMeasurement(LimelightHelpers.getBotPose2d_wpiBlue("limelight"), Timer.getFPGATimestamp());
+    //   SmartDashboard.putBoolean("limelightResultValid", true);
+    // } else {
+    //   SmartDashboard.putBoolean("limelightResultValid", false);
+    // }
 
     boolean doRejectUpdate = false;
 
     LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
+
     if(Math.abs(pigeon2.getRate()) > 720) {
       doRejectUpdate = true;
     }
-    
     if(mt2.tagCount == 0) {
       doRejectUpdate = true;
     }
     
     if(!doRejectUpdate) {
+      SmartDashboard.putBoolean("limelightResultValid", true);
       m_robotContainer.drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(.7,.7,9999999));
-      m_robotContainer.drivetrain.addVisionMeasurement(
-        mt2.pose,
-        mt2.timestampSeconds
-        );
-      }
+      m_robotContainer.drivetrain.addVisionMeasurement(mt2.pose, mt2.timestampSeconds);
+    } else {
+      SmartDashboard.putBoolean("limelightResultValid", false);
+    }
       
-      LimelightHelpers.LimelightResults llresults = LimelightHelpers.getLatestResults("limelight");
-      LimelightHelpers.LimelightTarget_Fiducial[] fiducials = llresults.targets_Fiducials;
-      boolean canSeeTag7 = false;
-      for (int i = 0; i < fiducials.length; i++) {
+    LimelightHelpers.LimelightResults llresults = LimelightHelpers.getLatestResults("limelight");
+    LimelightHelpers.LimelightTarget_Fiducial[] fiducials = llresults.targets_Fiducials;
+
+    boolean canSeeTag7 = false;
+    for (int i = 0; i < fiducials.length; i++) {
       if (fiducials[i].fiducialID == 7) {
         canSeeTag7 = true;
         break;
       }
     }
+    
     SmartDashboard.putBoolean("tag 7", canSeeTag7);
-      
     SmartDashboard.putString("odometry", m_robotContainer.drivetrain.getOdometry().toString());
     SmartDashboard.putNumber("poseX", m_robotContainer.drivetrain.getState().Pose.getX());
     SmartDashboard.putNumber("poseY", m_robotContainer.drivetrain.getState().Pose.getY());
-
-
   }
 
   @Override

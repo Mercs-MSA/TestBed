@@ -94,7 +94,7 @@ public class Robot extends TimedRobot {
     }
 
     boolean doRejectUpdate = false;
-    LimelightHelpers.SetRobotOrientation("limelight", pigeon2.getAngle(), 0, 0, 0, 0, 0);
+    LimelightHelpers.SetRobotOrientation("limelight", m_robotContainer.drivetrain.getOdometry().getEstimatedPosition().getRotation().getDegrees(), 0, 0, 0, 0, 0);
     LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
 
     if(Math.abs(pigeon2.getRate()) > 720) {
@@ -118,7 +118,7 @@ public class Robot extends TimedRobot {
     LimelightHelpers.LimelightTarget_Fiducial[] fiducials = llresults.targets_Fiducials;
 
     for (int i = 0; i < fiducials.length; i++) {
-      if (fiducials[i].fiducialID === tagNumber) {
+      if (fiducials[i].fiducialID == tagNumber) {
         return true;
       }
     }

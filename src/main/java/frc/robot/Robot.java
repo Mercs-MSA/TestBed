@@ -15,11 +15,9 @@ import edu.wpi.first.math.VecBuilder;
 
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
-
   private RobotContainer m_robotContainer;
-
   private Pigeon2 pigeon2 = new Pigeon2(16);
-
+  private boolean enableLimeLight = true;
 
   @Override
   public void robotInit() {
@@ -31,47 +29,9 @@ public class Robot extends TimedRobot {
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
 
-    LimelightHelpers.SetRobotOrientation("limelight", pigeon2.getAngle(), 0, 0, 0, 0, 0);
+    addLimeLightResultsToOdometry();
 
-    // var lastResult = LimelightHelpers.getLatestResults("limelight");
-    // if (lastResult.valid) {
-    //   m_robotContainer.drivetrain.addVisionMeasurement(LimelightHelpers.getBotPose2d_wpiBlue("limelight"), Timer.getFPGATimestamp());
-    //   SmartDashboard.putBoolean("limelightResultValid", true);
-    // } else {
-    //   SmartDashboard.putBoolean("limelightResultValid", false);
-    // }
-
-    boolean doRejectUpdate = false;
-
-    LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
-
-    if(Math.abs(pigeon2.getRate()) > 720) {
-      doRejectUpdate = true;
-    }
-    if(mt2.tagCount == 0) {
-      doRejectUpdate = true;
-    }
-    
-    if(!doRejectUpdate) {
-      SmartDashboard.putBoolean("limelightResultValid", true);
-      m_robotContainer.drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(.7,.7,9999999));
-      m_robotContainer.drivetrain.addVisionMeasurement(mt2.pose, mt2.timestampSeconds);
-    } else {
-      SmartDashboard.putBoolean("limelightResultValid", false);
-    }
-      
-    LimelightHelpers.LimelightResults llresults = LimelightHelpers.getLatestResults("limelight");
-    LimelightHelpers.LimelightTarget_Fiducial[] fiducials = llresults.targets_Fiducials;
-
-    boolean canSeeTag7 = false;
-    for (int i = 0; i < fiducials.length; i++) {
-      if (fiducials[i].fiducialID == 7) {
-        canSeeTag7 = true;
-        break;
-      }
-    }
-    
-    SmartDashboard.putBoolean("tag 7", canSeeTag7);
+    SmartDashboard.putBoolean("tag 7", limelightCanSeeAprilTag(7));
     SmartDashboard.putString("odometry", m_robotContainer.drivetrain.getOdometry().toString());
     SmartDashboard.putNumber("poseX", m_robotContainer.drivetrain.getState().Pose.getX());
     SmartDashboard.putNumber("poseY", m_robotContainer.drivetrain.getState().Pose.getY());
@@ -127,4 +87,42 @@ public class Robot extends TimedRobot {
 
   @Override
   public void simulationPeriodic() {}
+
+  public void addLimeLightResultsToOdometry() {
+    if (!enableLimeLight) {
+      return;
+    }
+
+    boolean doRejectUpdate = false;
+    LimelightHelpers.SetRobotOrientation("limelight", pigeon2.getAngle(), 0, 0, 0, 0, 0);
+    LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
+
+    if(Math.abs(pigeon2.getRate()) > 720) {
+      doRejectUpdate = true;
+    }
+    if(mt2.tagCount == 0) {
+      doRejectUpdate = true;
+    }
+    
+    if(!doRejectUpdate) {
+      SmartDashboard.putBoolean("limelightResultValid", true);
+      m_robotContainer.drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(.7,.7,9999999));
+      m_robotContainer.drivetrain.addVisionMeasurement(mt2.pose, mt2.timestampSeconds);
+    } else {
+      SmartDashboard.putBoolean("limelightResultValid", false);
+    }
+  }
+
+  public boolean limelightCanSeeAprilTag(int tagNumber) {
+    LimelightHelpers.LimelightResults llresults = LimelightHelpers.getLatestResults("limelight");
+    LimelightHelpers.LimelightTarget_Fiducial[] fiducials = llresults.targets_Fiducials;
+
+    for (int i = 0; i < fiducials.length; i++) {
+      if (fiducials[i].fiducialID === tagNumber) {
+        return true;
+      }
+    }
+
+    return false;
+  }
 }

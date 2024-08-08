@@ -16,6 +16,22 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.path.GoalEndState;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.path.PathPlannerPath;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
+import java.util.List;
+
+import frc.robot.LimelightHelpers.LimelightTarget_Fiducial;
+
 public class RobotContainer {
   private double MaxSpeed = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top speed
   private double MaxAngularRate = 1.5 * Math.PI; // 3/4 of a rotation per second max angular velocity
@@ -32,7 +48,7 @@ public class RobotContainer {
   private final Telemetry logger = new Telemetry(MaxSpeed);
 
   /* Path follower */
-  private Command runAuto = drivetrain.getAutoPath("Masterpiece");
+  private Command runAuto = drivetrain.getAutoPath("NothingAuto");
 
   private void configureBindings() {
     drivetrain.setDefaultCommand( // Drivetrain will execute this command periodically
@@ -48,6 +64,29 @@ public class RobotContainer {
             .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
             .withRotationalRate(limelight_aim_proportional())
     ));
+    joystick.y().onTrue(
+      new InstantCommand(() -> {
+        SmartDashboard.putNumber("Pose X: ", limelightAlignToAmp().getX());
+        SmartDashboard.putNumber("Pose Y: ", limelightAlignToAmp().getY());
+      })
+      // limelightAlignToAmp(), 
+      // new PathConstraints(
+      //   4.0, 4.0, 
+      //   Units.degreesToRadians(360), Units.degreesToRadians(540)
+      // ), 
+      // 0, 
+      // 0
+    );
+    joystick.x().onTrue(AutoBuilder.pathfindToPose(
+      new Pose2d(1.80, 7.6, Rotation2d.fromDegrees(90)), 
+      new PathConstraints(
+        4.0, 4.0, 
+        Units.degreesToRadians(360), Units.degreesToRadians(540)
+      ), 
+      0, 
+      2.0
+    ));
+
 
     // reset the field-centric heading on left bumper press
     joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative()));
@@ -56,6 +95,58 @@ public class RobotContainer {
       drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
     }
     drivetrain.registerTelemetry(logger::telemeterize);
+
+// TESTING WOOHOOOO
+
+    // Add a button to run pathfinding commands to SmartDashboard
+    SmartDashboard.putData("Pathfind to Pickup Pos", AutoBuilder.pathfindToPose(
+      new Pose2d(14.0, 6.5, Rotation2d.fromDegrees(0)), 
+      new PathConstraints(
+        4.0, 4.0, 
+        Units.degreesToRadians(360), Units.degreesToRadians(540)
+      ), 
+      0, 
+      2.0
+    ));
+    SmartDashboard.putData("Pathfind to Scoring Pos", AutoBuilder.pathfindToPose(
+      new Pose2d(2.15, 3.0, Rotation2d.fromDegrees(180)), 
+      new PathConstraints(
+        4.0, 4.0, 
+        Units.degreesToRadians(360), Units.degreesToRadians(540)
+      ), 
+      0, 
+      0
+    ));
+
+    // Add a button to SmartDashboard that will create and follow an on-the-fly path
+    // This example will simply move the robot 2m in the +X field direction
+    SmartDashboard.putData("On-the-fly path", Commands.runOnce(() -> {
+      Pose2d currentPose = drivetrain.getState().Pose;
+      
+      // The rotation component in these poses represents the direction of travel
+      Pose2d startPos = new Pose2d(currentPose.getTranslation(), new Rotation2d());
+      Pose2d endPos = new Pose2d(currentPose.getTranslation().plus(new Translation2d(2.0, 0.0)), new Rotation2d());
+
+      List<Translation2d> bezierPoints = PathPlannerPath.bezierFromPoses(startPos, endPos);
+      PathPlannerPath path = new PathPlannerPath(
+        bezierPoints, 
+        new PathConstraints(
+          4.0, 4.0, 
+          Units.degreesToRadians(360), Units.degreesToRadians(540)
+        ),  
+        new GoalEndState(0.0, currentPose.getRotation())
+      );
+
+      // Prevent this path from being flipped on the red alliance, since the given positions are already correct
+      path.preventFlipping = true;
+
+      AutoBuilder.followPath(path).schedule();
+    }));
+  
+
+
+
+
   }
 
   public RobotContainer() {
@@ -67,14 +158,14 @@ public class RobotContainer {
     return runAuto;
   }
 
-  double limelight_aim_proportional() {
+  public double limelight_aim_proportional() {
     LimelightHelpers.LimelightResults llresults = LimelightHelpers.getLatestResults("limelight");
     LimelightHelpers.LimelightTarget_Fiducial[] fiducials = llresults.targets_Fiducials;
 
     double targetingAngularVelocity = 0;
 
     for (int i = 0; i < fiducials.length; i++) {
-      if (fiducials[i].fiducialID == 7) {
+      if (fiducials[i].fiducialID == 6) {
         double kP = 0.035;
         targetingAngularVelocity = fiducials[i].tx * kP;
         targetingAngularVelocity *= MaxAngularRate;
@@ -85,4 +176,32 @@ public class RobotContainer {
     
     return targetingAngularVelocity;
   }
+
+
+
+  public Pose2d limelightAlignToAmp() {
+    LimelightHelpers.LimelightResults llresults = LimelightHelpers.getLatestResults("limelight");
+    LimelightHelpers.LimelightTarget_Fiducial[] fiducials = llresults.targets_Fiducials;
+
+    Pose2d targetPosition = new Pose2d();
+
+    for (int i = 0; i < fiducials.length; i++) {
+      if (fiducials[i].fiducialID == 6) {
+        // double kP = 0.035;
+        // targetingAngularVelocity = fiducials[i].tx * kP;
+        targetPosition = fiducials[i].getRobotPose_TargetSpace2D();
+        
+        break;
+      }
+    }
+    
+    return targetPosition;
+  }
+
 }
+
+
+
+
+
+

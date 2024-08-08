@@ -183,12 +183,14 @@ public class RobotContainer {
     LimelightHelpers.LimelightResults llresults = LimelightHelpers.getLatestResults("limelight");
     LimelightHelpers.LimelightTarget_Fiducial[] fiducials = llresults.targets_Fiducials;
 
+    
+    SmartDashboard.putString("HasCodeExecuted1", "1");
     Pose2d targetPosition = new Pose2d();
-
+    SmartDashboard.putNumber("Something", fiducials.length);
     for (int i = 0; i < fiducials.length; i++) {
+      SmartDashboard.putNumber("Fish", fiducials[i].fiducialID);
       if (fiducials[i].fiducialID == 6) {
-        // double kP = 0.035;
-        // targetingAngularVelocity = fiducials[i].tx * kP;
+        SmartDashboard.putString("HasCodeExecuted2", "2");
         targetPosition = fiducials[i].getRobotPose_TargetSpace2D();
         
         break;

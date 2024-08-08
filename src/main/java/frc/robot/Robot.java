@@ -16,7 +16,7 @@ import edu.wpi.first.math.VecBuilder;
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
   private RobotContainer m_robotContainer;
-  private Pigeon2 pigeon2 = new Pigeon2(16);
+  private Pigeon2 pigeon2 = new Pigeon2(16, "canivore");
   private boolean enableLimeLight = true;
 
   @Override

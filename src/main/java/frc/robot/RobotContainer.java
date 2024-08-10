@@ -50,6 +50,10 @@ public class RobotContainer {
   /* Path follower */
   private Command runAuto = drivetrain.getAutoPath("NothingAuto");
 
+  public RobotContainer() {
+    configureBindings();
+  }
+
   private void configureBindings() {
     drivetrain.setDefaultCommand( // Drivetrain will execute this command periodically
         drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with
@@ -58,25 +62,22 @@ public class RobotContainer {
             .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
         ).ignoringDisable(true));
 
+
     joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
+
     joystick.b().whileTrue(drivetrain.applyRequest(() -> 
       drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
             .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
             .withRotationalRate(limelight_aim_proportional())
     ));
+
     joystick.y().onTrue(
       new InstantCommand(() -> {
         SmartDashboard.putNumber("Pose X: ", limelightAlignToAmp().getX());
         SmartDashboard.putNumber("Pose Y: ", limelightAlignToAmp().getY());
       })
-      // limelightAlignToAmp(), 
-      // new PathConstraints(
-      //   4.0, 4.0, 
-      //   Units.degreesToRadians(360), Units.degreesToRadians(540)
-      // ), 
-      // 0, 
-      // 0
     );
+
     joystick.x().onTrue(AutoBuilder.pathfindToPose(
       new Pose2d(1.80, 7.6, Rotation2d.fromDegrees(90)), 
       new PathConstraints(
@@ -87,70 +88,60 @@ public class RobotContainer {
       2.0
     ));
 
-
     // reset the field-centric heading on left bumper press
     joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative()));
 
     if (Utils.isSimulation()) {
       drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
     }
+
     drivetrain.registerTelemetry(logger::telemeterize);
 
-// TESTING WOOHOOOO
-
     // Add a button to run pathfinding commands to SmartDashboard
-    SmartDashboard.putData("Pathfind to Pickup Pos", AutoBuilder.pathfindToPose(
-      new Pose2d(14.0, 6.5, Rotation2d.fromDegrees(0)), 
-      new PathConstraints(
-        4.0, 4.0, 
-        Units.degreesToRadians(360), Units.degreesToRadians(540)
-      ), 
-      0, 
-      2.0
-    ));
-    SmartDashboard.putData("Pathfind to Scoring Pos", AutoBuilder.pathfindToPose(
-      new Pose2d(2.15, 3.0, Rotation2d.fromDegrees(180)), 
-      new PathConstraints(
-        4.0, 4.0, 
-        Units.degreesToRadians(360), Units.degreesToRadians(540)
-      ), 
-      0, 
-      0
-    ));
+    // SmartDashboard.putData("Pathfind to Pickup Pos", AutoBuilder.pathfindToPose(
+    //   new Pose2d(14.0, 6.5, Rotation2d.fromDegrees(0)), 
+    //   new PathConstraints(
+    //     4.0, 4.0, 
+    //     Units.degreesToRadians(360), Units.degreesToRadians(540)
+    //   ), 
+    //   0, 
+    //   2.0
+    // ));
+
+    // SmartDashboard.putData("Pathfind to Scoring Pos", AutoBuilder.pathfindToPose(
+    //   new Pose2d(2.15, 3.0, Rotation2d.fromDegrees(180)), 
+    //   new PathConstraints(
+    //     4.0, 4.0, 
+    //     Units.degreesToRadians(360), Units.degreesToRadians(540)
+    //   ), 
+    //   0, 
+    //   0
+    // ));
 
     // Add a button to SmartDashboard that will create and follow an on-the-fly path
     // This example will simply move the robot 2m in the +X field direction
-    SmartDashboard.putData("On-the-fly path", Commands.runOnce(() -> {
-      Pose2d currentPose = drivetrain.getState().Pose;
+    // SmartDashboard.putData("On-the-fly path", Commands.runOnce(() -> {
+    //   Pose2d currentPose = drivetrain.getState().Pose;
       
-      // The rotation component in these poses represents the direction of travel
-      Pose2d startPos = new Pose2d(currentPose.getTranslation(), new Rotation2d());
-      Pose2d endPos = new Pose2d(currentPose.getTranslation().plus(new Translation2d(2.0, 0.0)), new Rotation2d());
+    //   // The rotation component in these poses represents the direction of travel
+    //   Pose2d startPos = new Pose2d(currentPose.getTranslation(), new Rotation2d());
+    //   Pose2d endPos = new Pose2d(currentPose.getTranslation().plus(new Translation2d(2.0, 0.0)), new Rotation2d());
 
-      List<Translation2d> bezierPoints = PathPlannerPath.bezierFromPoses(startPos, endPos);
-      PathPlannerPath path = new PathPlannerPath(
-        bezierPoints, 
-        new PathConstraints(
-          4.0, 4.0, 
-          Units.degreesToRadians(360), Units.degreesToRadians(540)
-        ),  
-        new GoalEndState(0.0, currentPose.getRotation())
-      );
+    //   List<Translation2d> bezierPoints = PathPlannerPath.bezierFromPoses(startPos, endPos);
+    //   PathPlannerPath path = new PathPlannerPath(
+    //     bezierPoints, 
+    //     new PathConstraints(
+    //       4.0, 4.0, 
+    //       Units.degreesToRadians(360), Units.degreesToRadians(540)
+    //     ),  
+    //     new GoalEndState(0.0, currentPose.getRotation())
+    //   );
 
-      // Prevent this path from being flipped on the red alliance, since the given positions are already correct
-      path.preventFlipping = true;
+    //   // Prevent this path from being flipped on the red alliance, since the given positions are already correct
+    //   path.preventFlipping = true;
 
-      AutoBuilder.followPath(path).schedule();
-    }));
-  
-
-
-
-
-  }
-
-  public RobotContainer() {
-    configureBindings();
+    //   AutoBuilder.followPath(path).schedule();
+    // }));
   }
 
   public Command getAutonomousCommand() {
@@ -177,29 +168,21 @@ public class RobotContainer {
     return targetingAngularVelocity;
   }
 
-
-
   public Pose2d limelightAlignToAmp() {
     LimelightHelpers.LimelightResults llresults = LimelightHelpers.getLatestResults("limelight");
     LimelightHelpers.LimelightTarget_Fiducial[] fiducials = llresults.targets_Fiducials;
 
-    
-    SmartDashboard.putString("HasCodeExecuted1", "1");
     Pose2d targetPosition = new Pose2d();
-    SmartDashboard.putNumber("Something", fiducials.length);
+
     for (int i = 0; i < fiducials.length; i++) {
-      SmartDashboard.putNumber("Fish", fiducials[i].fiducialID);
       if (fiducials[i].fiducialID == 6) {
-        SmartDashboard.putString("HasCodeExecuted2", "2");
         targetPosition = fiducials[i].getRobotPose_TargetSpace2D();
-        
         break;
       }
     }
     
     return targetPosition;
   }
-
 }
 
 

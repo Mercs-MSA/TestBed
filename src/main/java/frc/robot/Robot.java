@@ -7,7 +7,6 @@ package frc.robot;
 import com.ctre.phoenix6.hardware.Pigeon2;
 
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -31,10 +30,10 @@ public class Robot extends TimedRobot {
 
     addLimeLightResultsToOdometry();
 
-    SmartDashboard.putBoolean("tag 7", limelightCanSeeAprilTag(7));
-    SmartDashboard.putString("odometry", m_robotContainer.drivetrain.getOdometry().toString());
-    SmartDashboard.putNumber("poseX", m_robotContainer.drivetrain.getState().Pose.getX());
-    SmartDashboard.putNumber("poseY", m_robotContainer.drivetrain.getState().Pose.getY());
+    // SmartDashboard.putBoolean("tag 7", limelightCanSeeAprilTag(7));
+    // SmartDashboard.putString("odometry", m_robotContainer.drivetrain.getOdometry().toString());
+    // SmartDashboard.putNumber("poseX", m_robotContainer.drivetrain.getState().Pose.getX());
+    // SmartDashboard.putNumber("poseY", m_robotContainer.drivetrain.getState().Pose.getY());
   }
 
   @Override

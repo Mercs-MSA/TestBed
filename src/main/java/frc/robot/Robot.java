@@ -93,8 +93,8 @@ public class Robot extends TimedRobot {
     }
 
     boolean doRejectUpdate = false;
-    LimelightHelpers.SetRobotOrientation("limelight", m_robotContainer.drivetrain.getOdometry().getEstimatedPosition().getRotation().getDegrees(), 0, 0, 0, 0, 0);
-    LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
+    LimelightHelpers.SetRobotOrientation("limelight-front", m_robotContainer.drivetrain.getOdometry().getEstimatedPosition().getRotation().getDegrees(), 0, 0, 0, 0, 0);
+    LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-front");
 
     if(Math.abs(pigeon2.getRate()) > 720) {
       doRejectUpdate = true;
@@ -113,7 +113,7 @@ public class Robot extends TimedRobot {
   }
 
   public boolean limelightCanSeeAprilTag(int tagNumber) {
-    LimelightHelpers.LimelightResults llresults = LimelightHelpers.getLatestResults("limelight");
+    LimelightHelpers.LimelightResults llresults = LimelightHelpers.getLatestResults("limelight-front");
     LimelightHelpers.LimelightTarget_Fiducial[] fiducials = llresults.targets_Fiducials;
 
     for (int i = 0; i < fiducials.length; i++) {

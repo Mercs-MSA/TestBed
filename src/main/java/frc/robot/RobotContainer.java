@@ -35,6 +35,10 @@ public class RobotContainer {
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final Telemetry logger = new Telemetry(MaxSpeed);
 
+  //private final Limelight m_limelight_front = new Limelight(drivetrain, "limelight-front");
+  //private final Limelight m_limelight_back = new Limelight(drivetrain, "limelight-front");
+
+
   /* Path follower */
   private Command runAuto = drivetrain.getAutoPath("NothingAuto");
 
@@ -85,7 +89,8 @@ public class RobotContainer {
   }
 
   public double aimWithLimelight() {
-    LimelightHelpers.LimelightResults llresults = LimelightHelpers.getLatestResults("limelight");
+    LimelightHelpers.LimelightResults llresults = LimelightHelpers.getLatestResults("limelight-front");
+    LimelightHelpers.LimelightResults llresults2 = LimelightHelpers.getLatestResults("limelight-back");
     LimelightHelpers.LimelightTarget_Fiducial[] fiducials = llresults.targets_Fiducials;
 
     double targetingAngularVelocity = 0;

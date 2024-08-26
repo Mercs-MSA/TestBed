@@ -15,6 +15,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Pivot.Pivot;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
@@ -35,9 +37,7 @@ public class RobotContainer {
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final Telemetry logger = new Telemetry(MaxSpeed);
 
-  //private final Limelight m_limelight_front = new Limelight(drivetrain, "limelight-front");
-  //private final Limelight m_limelight_back = new Limelight(drivetrain, "limelight-front");
-
+  public static final Pivot m_pivot = new Pivot();
 
   /* Path follower */
   private Command runAuto = drivetrain.getAutoPath("NothingAuto");
@@ -75,6 +75,14 @@ public class RobotContainer {
 
     // reset the field-centric heading on left bumper press
     joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative()));
+
+    joystick.start().and(joystick.back()).onTrue(
+      new InstantCommand(() -> m_pivot.performAutoHome())
+    );
+
+    joystick.start().and(joystick.y()).onTrue(
+      new InstantCommand(() -> m_pivot.leaderGoToPosition(Constants.SATConstants.PODIUM.pivot))
+    );
 
     if (Utils.isSimulation()) {
       drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));

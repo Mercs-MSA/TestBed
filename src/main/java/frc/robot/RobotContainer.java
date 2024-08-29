@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import org.ejml.dense.row.linsol.LinearSolverAbstract_CDRM;
+
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModule.DriveRequestType;
@@ -89,11 +91,12 @@ public class RobotContainer {
   }
 
   public double aimWithLimelight() {
-    LimelightHelpers.LimelightResults llresults = LimelightHelpers.getLatestResults("limelight-front");
+    LimelightHelpers.LimelightResults llresults1 = LimelightHelpers.getLatestResults("limelight-front");
     LimelightHelpers.LimelightResults llresults2 = LimelightHelpers.getLatestResults("limelight-back");
-    LimelightHelpers.LimelightTarget_Fiducial[] fiducials = llresults.targets_Fiducials;
+    LimelightHelpers.LimelightTarget_Fiducial[] fiducials = llresults1.targets_Fiducials;
 
     double targetingAngularVelocity = 0;
+    //we need to establish which fiducial to use for aiming with the lime lights - maybe using a boolean as an attribute for the limelight class
 
     for (int i = 0; i < fiducials.length; i++) {
       if (fiducials[i].fiducialID == 6) {

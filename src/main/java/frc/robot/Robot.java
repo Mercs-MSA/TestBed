@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.util.Units;
 
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
@@ -92,36 +93,87 @@ public class Robot extends TimedRobot {
       return;
     }
 
+    double confidence1 = 0;
+    double confidence2 = 0;
     boolean doRejectUpdate = false;
     LimelightHelpers.SetRobotOrientation("limelight-front", m_robotContainer.drivetrain.getOdometry().getEstimatedPosition().getRotation().getDegrees(), 0, 0, 0, 0, 0);
-    LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-front");
+    LimelightHelpers.PoseEstimate mt1 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-front");
+    LimelightHelpers.SetRobotOrientation("limelight-back", m_robotContainer.drivetrain.getOdometry().getEstimatedPosition().getRotation().getDegrees(), 0, 0, 0, 0, 0);
+    LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-back");
 
-    if(Math.abs(pigeon2.getRate()) > 720) {
-      doRejectUpdate = true;
-    }
-    if(mt2.tagCount == 0) {
-      doRejectUpdate = true;
-    }
-    
-    if(!doRejectUpdate) {
-      SmartDashboard.putBoolean("limelightResultValid", true);
-      m_robotContainer.drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(.7,.7,9999999));
-      m_robotContainer.drivetrain.addVisionMeasurement(mt2.pose, mt2.timestampSeconds);
-    } else {
-      SmartDashboard.putBoolean("limelightResultValid", false);
-    }
-  }
-
-  public boolean limelightCanSeeAprilTag(int tagNumber) {
-    LimelightHelpers.LimelightResults llresults = LimelightHelpers.getLatestResults("limelight-front");
-    LimelightHelpers.LimelightTarget_Fiducial[] fiducials = llresults.targets_Fiducials;
-
-    for (int i = 0; i < fiducials.length; i++) {
-      if (fiducials[i].fiducialID == tagNumber) {
-        return true;
+    if (mt1.tagCount > 0) {
+      if (mt1.avgTagDist < Units.feetToMeters(12)) {
+        confidence1 = 0.5;
+      }
+      else if (mt1.avgTagDist < Units.feetToMeters(6)) {
+        confidence1 = 0.7;
+      }
+      else if (mt1.avgTagDist < Units.feetToMeters(3)) {
+        confidence1 = 0.9;
+      }
+      else {
+        confidence1 = 0;
       }
     }
 
-    return false;
+    if (mt2.tagCount > 0) {
+      if (mt2.avgTagDist < Units.feetToMeters(12)) {
+        confidence2 = 0.5;
+      }
+      else if (mt2.avgTagDist < Units.feetToMeters(6)) {
+        confidence2 = 0.7;
+      }
+      else if (mt2.avgTagDist < Units.feetToMeters(3)) {
+        confidence2 = 0.9;
+      }
+      else {
+        confidence2 = 0;
+      }
+    }
+
+    if(Math.abs(pigeon2.getRate()) > 720) {
+      doRejectUpdate = true;
+      confidence1 = 0;
+      confidence2 = 0;
+    }
+
+    if(mt1.tagCount == 0) {
+      doRejectUpdate = true;
+      confidence1 = 0;
+    }
+    
+    if(mt2.tagCount == 0) {
+      doRejectUpdate = true;
+      confidence2 = 0;
+    }
+    
+    if(!doRejectUpdate) {
+      if (confidence1 > confidence2 || confidence1 == confidence2) {
+        SmartDashboard.putBoolean("limelightResultValid", true);
+        m_robotContainer.drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(.7,.7,9999999));
+        m_robotContainer.drivetrain.addVisionMeasurement(mt1.pose, mt1.timestampSeconds);
+      }
+      else if (confidence1 < confidence2) {
+        SmartDashboard.putBoolean("limelightResultValid", true);
+        m_robotContainer.drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(.7,.7,9999999));
+        m_robotContainer.drivetrain.addVisionMeasurement(mt2.pose, mt2.timestampSeconds);
+      } else {
+        SmartDashboard.putBoolean("limelightResultValid", false);
+      }
+    }
   }
+//add parameters for confidence 1 and confidence 2 - maybe 
+//function used to determine if a specific april
+  // public boolean limelightCanSeeAprilTag(int tagNumber) {
+  //   LimelightHelpers.LimelightResults llresults = LimelightHelpers.getLatestResults("limelight-front");
+  //   LimelightHelpers.LimelightTarget_Fiducial[] fiducials = llresults.targets_Fiducials;
+
+  //   for (int i = 0; i < fiducials.length; i++) {
+  //     if (fiducials[i].fiducialID == tagNumber) {
+  //       return true;
+  //     }
+  //   }
+
+  //   return false;
+  // }
 }
